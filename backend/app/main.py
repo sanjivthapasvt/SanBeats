@@ -10,7 +10,7 @@ import requests
 import os
 import logging
 
-app = FastAPI(title="SabBeats API")
+app = FastAPI(title="SanBeats API")
 
 #Get api key from .env
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
