@@ -1,0 +1,6 @@
+fastapi[standard]
+yt-dlp
+requests
+python-multipart
+python-dotenv
+isodate
