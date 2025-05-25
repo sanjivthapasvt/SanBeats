@@ -13,3 +13,4 @@ class AudioInfo(BaseModel):
     duration: str
     format: str
     quality: str
+    thumbnail: str
