@@ -60,6 +60,7 @@ def get_video_info(video_id: str) -> AudioInfo:
             duration = formatted_duration,
             format=best_audio.get('acodec', 'unknown'),
             quality=f"{best_audio.get('abr', 0)}kbps",
+            thumbnail = info.get('thumbnail', '')
         )
         
         
