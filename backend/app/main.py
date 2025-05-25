@@ -1,19 +1,19 @@
 import asyncio
-from concurrent.futures import ThreadPoolExecutor
-from fastapi import FastAPI, HTTPException, Query
-from fastapi.responses import StreamingResponse
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-import yt_dlp
-from isodate import parse_duration
 import datetime
-from typing import List
 import requests
 import os
 import logging
+import yt_dlp
+from concurrent.futures import ThreadPoolExecutor
+from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
+from models import SearchResult, AudioInfo
+from isodate import parse_duration
+from typing import List
 from dotenv import load_dotenv
 
 load_dotenv()
+
 app = FastAPI(title="SanBeats API")
 
 #Get api key from .env
@@ -22,7 +22,7 @@ YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
 #setting up middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -35,20 +35,53 @@ logger = logging.getLogger(__name__)
 #threads to execute functions asynchronously
 executor = ThreadPoolExecutor(max_workers=4)
 
-class SearchResult(BaseModel):
-    id: str
-    title: str
-    duration: str
-    thumbnail: str
-    channel: str
 
-class StreamInfo(BaseModel):
-    url: str
-    title: str
-    duration: str
-    format: str
-    quality: str
 
+#funciton for getting video info from youtube and using yt-dlp to return audio only url 
+def get_video_info(video_id: str) -> AudioInfo:
+    ydl_opts = {
+        'quiet': True,
+        'no_warnings': True,
+    }
+    
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(f"https://youtube.com/watch?v={video_id}", download=False)
+        formats = info.get('formats',[])
+        audio_formats = [f for f in formats if f.get('acodec') != 'none']
+        if not audio_formats:
+            raise ValueError("No audio formats found")
+        best_audio = max(audio_formats, key=lambda x: x.get('abr') or 0)
+        duration_seconds = info.get('duration', 0)
+        formatted_duration = format_duration(datetime.timedelta(seconds=duration_seconds))
+
+        return AudioInfo(
+            url=best_audio.get('url', ''),
+            title = info.get('title', ''),
+            duration = formatted_duration,
+            format=best_audio.get('acodec', 'unknown'),
+            quality=f"{best_audio.get('abr', 0)}kbps",
+        )
+        
+        
+#function for getting audio url
+def get_audio_stream_url(video_id: str) -> str:
+    ydl_ops = {
+        'format': 'bestaudio/best',
+        'quiet': True,
+        'no_warnings': True,
+        'prefer_ffmpeg': True,
+    }
+    url = f"https://www.youtube.com/watch?v={video_id}"
+
+    try:
+        with yt_dlp.YoutubeDL(ydl_ops) as ydl:
+            info = ydl.extract_info(url, download=False)
+            return info['url']        
+    except Exception as e:
+        logger.error(f"yt-dlp error: {str(e)}")
+        return None
+    
+    
 #function for parsing time
 def format_duration(td: datetime.timedelta) -> str:
     total_seconds = int(td.total_seconds())
@@ -59,6 +92,10 @@ def format_duration(td: datetime.timedelta) -> str:
     else:
         return f"{minutes}:{seconds:02}"
 
+
+#######################
+#######ROUTES##########
+#######################
 
 #root path just return api name
 @app.get("/")
@@ -80,11 +117,11 @@ async def search_youtube(
             "type": "video",
             "maxResults": max_results,
             "key": YOUTUBE_API_KEY,
-            "videoCategoryID": "10", #music category
+            "videoCategoryId": "10", #music category
             "order": "relevance",
         }
         
-        response = requests.get(search_url, params=params)
+        response = requests.get(search_url, params=params, timeout=30)
         response.raise_for_status()
         data = response.json()
         
@@ -99,7 +136,8 @@ async def search_youtube(
             "key": YOUTUBE_API_KEY
         }
         
-        detail_response = requests.get(details_url, params=details_params)
+        detail_response = requests.get(details_url, params=details_params, timeout=30)
+        detail_response.raise_for_status()
         details_data = detail_response.json()
         #lookup dict for details
         details_lookup = {item["id"]: item for item in details_data["items"]}
@@ -111,8 +149,11 @@ async def search_youtube(
 
             #parse duration from ISO format to human readable format like 4:13
             duration_iso = details.get("contentDetails",{}).get("duration", "PT0S")
-            duration_full = parse_duration(duration_iso)             
-            duration = format_duration(duration_full)
+            try:
+                duration_full = parse_duration(duration_iso)             
+                duration = format_duration(duration_full)
+            except Exception:
+                duration = "0:00"
             #append the results to result list
             results.append(SearchResult(
                 id=video_id,
@@ -128,67 +169,10 @@ async def search_youtube(
         logger.error(f"Search error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Search failed {str(e)}")
 
-#funciton for getting video info using yt-dlp
-def get_video_info(video_id: str) -> StreamInfo:
-    ydl_opts = {
-        'quiet': True,
-        'no_warnings': True,
-    }
-    
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(f"https://youtube.com/watch?v={video_id}", download=False)
-        formats = info.get('formats',[])
-        audio_formats = [f for f in formats if f.get('acodec') != 'none']
-        best_audio = max(audio_formats, key=lambda x: x.get('abr', 0) or 0)
-        
-        return StreamInfo(
-            url=best_audio.get('url', ''),
-            title = info.get('title', ''),
-            duration = info.get('duration', ''),
-            format=best_audio.get('acodec', 'unknown'),
-            quality=f"{best_audio.get('abr', 0)}kbps",
-        )
 
-async def stream_audio_content(stream_url: str):
-    try:
-        response = requests.get(stream_url, stream=True, timeout=30)
-        response.raise_for_status()
-        
-        for chunk in response.iter_content(chunk_size=8192):
-            if chunk:
-                yield chunk
-    
-    except Exception as e:
-        logger.error(f"Streaming content error: {str(e)}")
-        raise
-
-#Get method for streaming audio
-@app.get("/stream/{video_id}")
-async def stream_audio(video_id: str, quality: str = "medium"):
-    try:
-        stream_url = await asyncio.get_event_loop().run_in_executor(
-            executor, get_audio_stream_url, video_id, quality
-        )
-        if not stream_url:
-            raise HTTPException(status_code=404, detail="Audio source not found")
-       
-        #stream audio
-        return StreamingResponse(
-            stream_audio_content(stream_url),
-            media_type='audio/mpeg',
-            headers={
-                "Content-Disposition": f"inline; filename={video_id}.mp3",
-                "Cache-Control": "no-cache",
-                "Accept-Ranges": "bytes"
-            }
-        ) 
-    except Exception as e:
-        logger.error(f"Stream error {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Streaming failed: {str(e)}")
-        
-
-@app.get("/info/{video_id}", response_model=StreamInfo)
-async def get_stream_info(video_id: str):
+#GET METHOD FOR GETTING YOUTUBE AUDIO URL
+@app.get("/info/{video_id}", response_model=AudioInfo)
+async def get_audio_info(video_id: str):
     try:
         info = await asyncio.get_event_loop().run_in_executor(
             executor, get_video_info, video_id
@@ -199,40 +183,3 @@ async def get_stream_info(video_id: str):
         logger.error(f"Stream Info error {str(e)}")
         raise HTTPException(status_code=404, detail="Video not found")
     
-
-
-def get_audio_stream_url(video_id: str, quality: str = "meduim") -> str:
-    ydl_ops = {
-        'format': 'bestaudio/best',
-        'quiet': True,
-        'no_warnings': True,
-        'extractaudio': True,
-        'audioformat': 'mp3',
-        'audioquality': get_quality_setting(quality),
-        'prefer_ffmpeg': True,
-    }
-    try:
-        with yt_dlp.YoutubeDL(ydl_ops) as ydl:
-            info = ydl.extract_info(f"https://youtube.com/watch?v={video_id}", download=False)
-            
-            #find best format
-            formats = info.get('formats', [])
-            audio_formats = [f for f in formats if f.get('acodec') != 'none']
-            
-            if audio_formats:
-                best_audio = max(audio_formats, key=lambda x:x.get('abr', 0) or 0)
-                return best_audio['url']
-        
-            return None
-        
-    except Exception as e:
-        logger.error(f"yt-dlp error: {str(e)}")
-        return None
-
-def get_quality_setting(quality: str) -> str:
-    quality_map = {
-        "low": "9",   
-        "medium": "5",
-        "high": "0"
-    }
-    return quality_map.get(quality, "5")
