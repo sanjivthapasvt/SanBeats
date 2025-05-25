@@ -1,0 +1,15 @@
+from pydantic import BaseModel
+
+class SearchResult(BaseModel):
+    id: str
+    title: str
+    duration: str
+    thumbnail: str
+    channel: str
+
+class AudioInfo(BaseModel):
+    url: str
+    title: str
+    duration: str
+    format: str
+    quality: str
