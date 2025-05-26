@@ -105,7 +105,7 @@ async def root():
 
 #Get method on /search with required query parameter and optional max results 
 #for sending search videos to youtube API
-@app.get('/search', response_model=List[SearchResult])
+@app.get('/api/search', response_model=List[SearchResult])
 async def search_youtube(
     q: str = Query(..., description="Youtube search query"),
     max_results: int = Query(10, ge=1, le=50)
@@ -172,7 +172,7 @@ async def search_youtube(
 
 
 #GET METHOD FOR GETTING YOUTUBE AUDIO URL
-@app.get("/info/{video_id}", response_model=AudioInfo)
+@app.get("/api/info/{video_id}", response_model=AudioInfo)
 async def get_audio_info(video_id: str):
     try:
         info = await asyncio.get_event_loop().run_in_executor(
