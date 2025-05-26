@@ -1,1 +1,5 @@
-<h2>Hello world</h2>
+<script>
+    import HomePage from "./components/pages/HomePage.svelte";
+</script>
+
+<HomePage />
