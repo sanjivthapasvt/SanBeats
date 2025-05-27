@@ -5,3 +5,12 @@ export interface searchResultInterface{
     thumbnail: string;
     channel : string;
 }
+
+export interface audioInfo{
+    url:string;
+    title: string;
+    duration: string;
+    format: string;
+    quality: string;
+    thumbnail: string;
+}
