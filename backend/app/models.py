@@ -14,3 +14,8 @@ class AudioInfo(BaseModel):
     format: str
     quality: str
     thumbnail: str
+
+class MusicRecommendation(BaseModel):
+    channel: str
+    tags: list
+    
