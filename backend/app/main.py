@@ -36,6 +36,7 @@ logger = logging.getLogger(__name__)
 #threads to execute functions asynchronously
 executor = ThreadPoolExecutor(max_workers=4)
 
+#function to process youtube search and return informtaion about each video
 def list_videos(data: dict) -> List[SearchResult]:
     results = []
     videos_ids = [item["id"]["videoId"] for item in data["items"]]
@@ -123,6 +124,7 @@ def get_audio_stream_url(video_id: str) -> str:
         return None
     
 
+#function for getting videos from the channel(helper function for music recommendation)
 def get_channel_videos(channelId: str) -> List[SearchResult]:
     try:
         url = f"https://www.googleapis.com/youtube/v3/search"
@@ -143,6 +145,7 @@ def get_channel_videos(channelId: str) -> List[SearchResult]:
     except Exception as e:
         logger.error(f"Recommendation error {str(e)}")
 
+#function for getting similar videos based on tag(helper function for music recommendation)
 def get_same_tags_videos(filtered_tags: str) -> List[SearchResult]:
     try:
         url = f"https://www.googleapis.com/youtube/v3/search"
