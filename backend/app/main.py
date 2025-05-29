@@ -315,7 +315,7 @@ async def music_recommendation(video_id: str):
         logger.error(f"Recommendation error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error while recommending: {str(e)}")
 
-@app.get("/api/trending_music", response_model=List[SearchResult])
+@app.get("/api/trending", response_model=List[SearchResult])
 async def trending_music():
     try:
         trending = await asyncio.get_event_loop().run_in_executor(
