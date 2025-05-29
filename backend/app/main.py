@@ -1,6 +1,5 @@
 import asyncio
 import datetime
-import json
 import requests
 import os
 import logging
@@ -8,7 +7,7 @@ import yt_dlp
 from concurrent.futures import ThreadPoolExecutor
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from models import SearchResult, AudioInfo, MusicRecommendation
+from models import SearchResult, AudioInfo
 from isodate import parse_duration
 from typing import List
 from dotenv import load_dotenv
@@ -39,7 +38,17 @@ executor = ThreadPoolExecutor(max_workers=4)
 #function to process youtube search and return informtaion about each video
 def list_videos(data: dict) -> List[SearchResult]:
     results = []
-    videos_ids = [item["id"]["videoId"] for item in data["items"]]
+    videos_ids = []
+    
+    #extract video id from different api response i.e trending endpoint and search
+    for item in data.get("items", []):
+        vid = item.get("id")
+        if isinstance(vid, dict):
+            video_id = vid.get("videoId")
+        else:
+            video_id = vid
+        if video_id:
+            videos_ids.append(video_id)
         
     #get additional video details i.e duration
     details_url = "https://www.googleapis.com/youtube/v3/videos"
@@ -53,11 +62,20 @@ def list_videos(data: dict) -> List[SearchResult]:
     detail_response.raise_for_status()
     details_data = detail_response.json()
     #lookup dict for details
-    details_lookup = {item["id"]: item for item in details_data["items"]}
+    details_lookup = {}
+    for item in details_data.get("items", []):
+        video_id = item.get("id")
+        if isinstance(video_id, str):
+            details_lookup[video_id] = item
         
     for item in data["items"]:
-        video_id = item["id"]["videoId"]
-        snippet = item["snippet"]
+        vid = item.get("id")
+        video_id = vid.get("videoId") if isinstance(vid, dict) else vid
+        
+        if not video_id:
+            continue
+        
+        snippet = item.get("snippet", {})
         details = details_lookup.get(video_id, {})
 
         #parse duration from ISO format to human readable format like 4:13
@@ -181,7 +199,7 @@ def get_similar_videos(video_id: str) -> List[SearchResult]:
         data = response.json()
         if not data.get("items"):
             return []
-        items = data["items"][0]["snippet"]
+        items = data["items"]
         tags = items.get("tags", [])
         filtered_tags = "|".join(tag.replace(" ", "+") for tag in tags[:3]) if tags else ""
         channel_id = items["channelId"]
@@ -199,6 +217,29 @@ def get_similar_videos(video_id: str) -> List[SearchResult]:
     except Exception as e:
         logger.error(f"Recommendation error {str(e)}")
 
+def get_trending_music() -> List[SearchResult]:
+    try:
+        url = "https://www.googleapis.com/youtube/v3/videos"
+        params = {
+            "part": "snippet",
+            "type": "video",
+            "order": "viewCount",
+            "chart": "mostPopular",
+            "regionCode": "US",
+            "videoCategoryId": "10",
+            "q": "music",
+            "maxResults": "15",
+            "key": YOUTUBE_API_KEY
+        }
+        response = requests.get(url, params, timeout=30)
+        response.raise_for_status()
+        data = response.json()
+        
+        return list_videos(data)
+
+    except Exception as e:
+        logger.error(f"Recommendation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Trending music error: {str(e)}")
 
 #function for parsing time
 def format_duration(td: datetime.timedelta) -> str:
@@ -264,7 +305,7 @@ async def get_audio_info(video_id: str):
     
 #GET METHOD FOR GETTING REALTED VIEDO TO THE MUSIC BEING PLAYED
 @app.get("/api/recommendation/{video_id}", response_model=List[SearchResult])
-async def get_music_recommendation(video_id: str):
+async def music_recommendation(video_id: str):
     try:
         recommendation = await asyncio.get_event_loop().run_in_executor(
             executor, get_similar_videos, video_id
@@ -273,3 +314,14 @@ async def get_music_recommendation(video_id: str):
     except Exception as e:
         logger.error(f"Recommendation error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error while recommending: {str(e)}")
+
+@app.get("/api/trending_music", response_model=List[SearchResult])
+async def trending_music():
+    try:
+        trending = await asyncio.get_event_loop().run_in_executor(
+            executor, get_trending_music
+        )
+        return trending
+    except Exception as e:
+        logger.error(f"Recommendation error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting trending: {str(e)}")
