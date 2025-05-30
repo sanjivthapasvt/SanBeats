@@ -45,8 +45,7 @@ YOUTUBE_API_KEY=your_youtube_api_key_here
 
 - Python 3.9+
 - Node.js (v18+ recommended)
-- npm or pnpm
-- Git
+- npm
 
 ---
 
