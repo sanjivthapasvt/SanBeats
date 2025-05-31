@@ -121,26 +121,7 @@ def get_video_info(video_id: str) -> AudioInfo:
             quality=f"{best_audio.get('abr', 0)}kbps",
             thumbnail = info.get('thumbnail', ''),
         )
-        
-        
-#function for getting audio url
-def get_audio_stream_url(video_id: str) -> str:
-    ydl_ops = {
-        'format': 'bestaudio/best',
-        'quiet': True,
-        'no_warnings': True,
-        'prefer_ffmpeg': True,
-    }
-    url = f"https://www.youtube.com/watch?v={video_id}"
 
-    try:
-        with yt_dlp.YoutubeDL(ydl_ops) as ydl:
-            info = ydl.extract_info(url, download=False)
-            return info['url']        
-    except Exception as e:
-        logger.error(f"yt-dlp error: {str(e)}")
-        return None
-    
 
 #function for getting videos from the channel(helper function for music recommendation)
 def get_channel_videos(channelId: str) -> List[SearchResult]:
@@ -199,10 +180,10 @@ def get_similar_videos(video_id: str) -> List[SearchResult]:
         data = response.json()
         if not data.get("items"):
             return []
-        items = data["items"]
-        tags = items.get("tags", [])
+        item = data["items"][0]
+        tags = item.get("tags", [])
         filtered_tags = "|".join(tag.replace(" ", "+") for tag in tags[:3]) if tags else ""
-        channel_id = items["channelId"]
+        channel_id = item["snippet"]["channelId"]
         channel_results = get_channel_videos(channel_id)
         tags_results = get_same_tags_videos(filtered_tags) if filtered_tags else []
         combined_results = channel_results + tags_results
