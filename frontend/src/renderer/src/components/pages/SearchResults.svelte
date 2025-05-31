@@ -1,40 +1,10 @@
 <script lang="ts">
   // Import necessary dependencies
-  import axios from 'axios'
-  import { baseUrl, searchResults } from '../stores/Variables'
+  import { searchResults } from '../stores/Variables'
   import { decode } from 'he'
-  import { audioInfoResults } from '../stores/Variables'
-  import { push } from 'svelte-spa-router'
+  import { clicked, currentTrackId } from '../stores/Variables'
   import { Play, Loader2 } from '@lucide/svelte'
-
-  // State to prevent multiple clicks while loading
-  let clicked: boolean = false
-  let currentTrackId: string | null = null
-
-  // Handle play button click - fetch audio info and navigate to player
-  const handlePlay = async (videoId: string) => {
-    try {
-      // Prevent multiple simultaneous requests
-      if (clicked) return
-      clicked = true
-      currentTrackId = videoId
-
-      // Fetch audio information from the API
-      const response = await axios.get(`${baseUrl}/info/${videoId}`)
-
-      // Store the audio info in the global store
-      audioInfoResults.set(response?.data)
-
-      // Navigate to the player page
-      push('/play')
-    } catch (error) {
-      console.error(error)
-    } finally {
-      // Reset click state regardless of success/failure
-      clicked = false
-      currentTrackId = null
-    }
-  }
+  import { handlePlay } from '../services/musicService'
 </script>
 
 <!-- Main container with dark gradient background -->
@@ -45,7 +15,9 @@
       {#if $searchResults.length > 0}
         <!-- Header section with title -->
         <div class="flex justify-between items-center mb-10">
-          <h2 class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+          <h2
+            class="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent"
+          >
             🔍 Search Results
           </h2>
           <div class="text-sm text-gray-400">
@@ -79,7 +51,7 @@
                 <div
                   class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                 >
-                  {#if clicked && currentTrackId === track.id}
+                  {#if $clicked && $currentTrackId === track.id}
                     <Loader2 class="w-10 h-10 text-white animate-spin" />
                   {:else}
                     <Play class="w-12 h-12 text-white" />
@@ -96,7 +68,10 @@
 
               <!-- Track details -->
               <div>
-                <h3 class="text-lg font-semibold truncate group-hover:text-indigo-300 transition" title={track.title}>
+                <h3
+                  class="text-lg font-semibold truncate group-hover:text-indigo-300 transition"
+                  title={track.title}
+                >
                   {decode(track.title)}
                 </h3>
                 <p class="text-sm text-gray-400 truncate" title={track.channel}>
