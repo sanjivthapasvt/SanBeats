@@ -11,8 +11,17 @@ from models import SearchResult, AudioInfo
 from isodate import parse_duration
 from typing import List
 from dotenv import load_dotenv
+import sys
 
-load_dotenv()
+#load environemnt variable depending on if it is running for ececutable or no
+if getattr(sys, 'frozen', False):
+    # Running as bundled .exe
+    dotenv_path = os.path.join(sys._MEIPASS, '.env')
+else:
+    # Running as script
+    dotenv_path = '.env'
+
+load_dotenv(dotenv_path)
 
 app = FastAPI(title="SanBeats API")
 
@@ -306,3 +315,4 @@ async def trending_music():
     except Exception as e:
         logger.error(f"Recommendation error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error getting trending: {str(e)}")
+    
