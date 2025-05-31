@@ -20,7 +20,8 @@
       // Make API request to search endpoint with query parameter
       const response = await axios.get(`${baseUrl}/search`, {
         params: {
-          q: searchQuery
+          q: searchQuery,
+          max_results: 25,
         }
       })
 
