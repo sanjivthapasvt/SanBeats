@@ -90,10 +90,12 @@ def list_videos(data: dict) -> List[SearchResult]:
         #parse duration from ISO format to human readable format like 4:13
         duration_iso = details.get("contentDetails",{}).get("duration", "PT0S")
         try:
-            duration_full = parse_duration(duration_iso)             
+            duration_full = parse_duration(duration_iso)   
+            if duration_full.total_seconds() < 120: #skip if duration is less than 2 min
+                continue          
             duration = format_duration(duration_full)
         except Exception:
-            duration = "0:00"
+            continue
         #append the results to result list
         results.append(SearchResult(
             id=video_id,
@@ -110,12 +112,18 @@ def get_video_info(video_id: str) -> AudioInfo:
     ydl_opts = {
         'quiet': True,
         'no_warnings': True,
+        'skip_download': True,
+        'format': 'bestaudio',
+        'extract_flat': False,
+        'force_generic_extractor': False,
+        'noplaylist': True,
+        'cachedir': False,
     }
     
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(f"https://youtube.com/watch?v={video_id}", download=False)
+        info = ydl.extract_info(f"https://youtube.com/watch?v={video_id}", download=False, process=True)
         formats = info.get('formats',[])
-        audio_formats = [f for f in formats if f.get('acodec') != 'none']
+        audio_formats = [f for f in formats if f.get('vcodec') == 'none' and f.get('acodec') != 'none']
         if not audio_formats:
             raise ValueError("No audio formats found")
         best_audio = max(audio_formats, key=lambda x: x.get('abr') or 0)
@@ -123,7 +131,7 @@ def get_video_info(video_id: str) -> AudioInfo:
         formatted_duration = format_duration(datetime.timedelta(seconds=duration_seconds))
 
         return AudioInfo(
-            url=best_audio.get('url', ''),
+            url=best_audio['url'],
             title = info.get('title', ''),
             duration = formatted_duration,
             format=best_audio.get('acodec', 'unknown'),
@@ -139,7 +147,7 @@ def get_channel_videos(channelId: str) -> List[SearchResult]:
         params = {
             "part": "snippet",
             "channelId": channelId,
-            "maxResults": 10,
+            "maxResults": 20,
             "order": "relevance",
             "type": "video",
             "videoCategoryId": "10",
@@ -160,7 +168,7 @@ def get_same_tags_videos(filtered_tags: str) -> List[SearchResult]:
         params = {
             "part": "snippet",
             "q": filtered_tags,
-            "maxResults": 10,
+            "maxResults": 20,
             "order": "relevance",
             "type": "video",
             "videoCategoryId": "10",
@@ -169,6 +177,7 @@ def get_same_tags_videos(filtered_tags: str) -> List[SearchResult]:
         response = requests.get(url, params, timeout=30)
         response.raise_for_status()
         data = response.json()
+        
         return list_videos(data)
 
     except Exception as e:
@@ -194,18 +203,19 @@ def get_similar_videos(video_id: str) -> List[SearchResult]:
         filtered_tags = "|".join(tag.replace(" ", "+") for tag in tags[:3]) if tags else ""
         channel_id = item["snippet"]["channelId"]
         channel_results = get_channel_videos(channel_id)
-        tags_results = get_same_tags_videos(filtered_tags) if filtered_tags else []
+        tags_results = get_same_tags_videos(filtered_tags)
         combined_results = channel_results + tags_results
         recommend_result = {}
         for video in combined_results:
             vid_id = getattr(video, "video_id", None) or getattr(video, "id", None)
             if vid_id and vid_id not in recommend_result:
                 recommend_result[vid_id] = video
-
+                
         return list(recommend_result.values())
 
     except Exception as e:
         logger.error(f"Recommendation error {str(e)}")
+
 
 def get_trending_music() -> List[SearchResult]:
     try:
@@ -218,7 +228,7 @@ def get_trending_music() -> List[SearchResult]:
             "regionCode": "US",
             "videoCategoryId": "10",
             "q": "music",
-            "maxResults": "15",
+            "maxResults": "25",
             "key": YOUTUBE_API_KEY
         }
         response = requests.get(url, params, timeout=30)
