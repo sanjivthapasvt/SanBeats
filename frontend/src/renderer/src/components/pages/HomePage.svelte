@@ -1,14 +1,12 @@
 <script lang="ts">
   import { onMount } from 'svelte'
   import axios from 'axios'
-  import { audioInfoResults, baseUrl, trendingMusic } from '../stores/Variables'
-  import { push } from 'svelte-spa-router'
+  import { handlePlay } from '../services/musicService'
+
+  import { baseUrl, trendingMusic, clicked, currentTrackId } from '../stores/Variables'
   import { Play, Loader2, RefreshCw } from '@lucide/svelte'
 
-  // Track state variables
-  let currentTrackId: string | null = null
   let isLoading = true
-  let clicked = false // Prevent double clicks
 
   // Fetch trending music from API
   const fetchTrending = async () => {
@@ -20,24 +18,6 @@
       console.error('Error fetching trending music:', error)
     } finally {
       isLoading = false
-    }
-  }
-
-  // Handle play button click - fetch track info and navigate
-  const handlePlay = async (videoId: string) => {
-    if (clicked) return // Prevent multiple simultaneous requests
-    clicked = true
-    currentTrackId = videoId
-
-    try {
-      const response = await axios.get(`${baseUrl}/info/${videoId}`)
-      audioInfoResults.set(response?.data)
-      push('/play') // Navigate to player page
-    } catch (error) {
-      console.error(error)
-    } finally {
-      clicked = false
-      currentTrackId = null
     }
   }
 
@@ -98,7 +78,7 @@
                 <div
                   class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300"
                 >
-                  {#if clicked && currentTrackId === track.id}
+                  {#if $clicked && $currentTrackId === track.id}
                     <Loader2 class="w-10 h-10 text-white animate-spin" />
                   {:else}
                     <Play class="w-12 h-12 text-white" />
