@@ -98,10 +98,7 @@ async function createWindow(): Promise<void> {
   if (backendReady) {
     mainWindow.show()
   } else {
-    console.error('FastAPI server did not become ready in time.')
-    mainWindow.loadURL('data:text/html,<h1>Backend failed to start</h1>')
     mainWindow.show()
-    return
   }
 
   if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
