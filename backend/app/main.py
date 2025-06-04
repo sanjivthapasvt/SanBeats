@@ -12,6 +12,7 @@ from isodate import parse_duration
 from typing import List
 from dotenv import load_dotenv
 import sys
+import uvicorn
 
 #load environemnt variable depending on if it is running for ececutable or no
 if getattr(sys, 'frozen', False):
@@ -241,6 +242,28 @@ def get_trending_music() -> List[SearchResult]:
         logger.error(f"Recommendation error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Trending music error: {str(e)}")
 
+def get_most_viewed_music() -> List[SearchResult]:
+    try:
+        url = "https://www.googleapis.com/youtube/v3/search"
+        params = {
+            "part": "snippet",
+            "type": "video",
+            "q": "music",
+            "publishedAfter": "2024-06-01T00:00:00Z", #within last year
+            "order": "viewCount",
+            "videoCategoryId": "10",
+            "maxResults": "25",
+            "regionCode": "US",
+            "key": YOUTUBE_API_KEY
+        }
+        response = requests.get(url, params, timeout=30)
+        response.raise_for_status()
+        data = response.json()
+        return list_videos(data)
+    
+    except Exception as e:
+        logger.error(f"Most Viewed music error {str(e)}")
+
 #function for parsing time
 def format_duration(td: datetime.timedelta) -> str:
     total_seconds = int(td.total_seconds())
@@ -326,3 +349,14 @@ async def trending_music():
         logger.error(f"Recommendation error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error getting trending: {str(e)}")
     
+
+@app.get("/api/most_viewed_music", response_model=List[SearchResult])
+async def most_viewed_music():
+    try:
+        popular_music = await asyncio.get_event_loop().run_in_executor(
+            executor, get_most_viewed_music
+        )
+        return popular_music
+    except Exception as e:
+        logger.error(f"popular error {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error getting trending: {str(e)}")
