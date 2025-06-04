@@ -5,7 +5,7 @@ import { clicked, currentTrackId } from '../stores/Variables'
 import { get } from 'svelte/store'
 
 // Handle play button click - fetch track info and navigate
-export const handlePlay = async (videoId: string) => {
+export const handlePlay = async (videoId: string): Promise<void> => {
   if (get(clicked)) return // Prevent multiple simultaneous requests
   clicked.set(true)
   currentTrackId.set(videoId)
@@ -13,7 +13,7 @@ export const handlePlay = async (videoId: string) => {
   try {
     const response = await axios.get(`${baseUrl}/info/${videoId}`)
     audioInfoResults.set(response?.data)
-    getRecommendation(videoId)
+    await getRecommendation(videoId)
     push('/play') // Navigate to player page
   } catch (error) {
     console.error(error)
@@ -23,7 +23,7 @@ export const handlePlay = async (videoId: string) => {
   }
 }
 
-export const getRecommendation = async (videoId: string) => {
+export const getRecommendation = async (videoId: string): Promise<void> => {
   try {
     const response = await axios.get(`${baseUrl}/recommendation/${videoId}`)
     recommendedMusic.set(response?.data)

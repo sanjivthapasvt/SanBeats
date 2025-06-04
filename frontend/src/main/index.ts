@@ -163,3 +163,4 @@ process.on('SIGTERM', () => {
   stopFastApiServer()
   app.quit()
 })
+
