@@ -7,20 +7,9 @@ from fastapi import HTTPException
 from models import SearchResult, AudioInfo
 from isodate import parse_duration
 from typing import List
-from dotenv import load_dotenv
-import sys
+from utils.env_loader import load_env
 
-#load environemnt variable depending on if it is running for ececutable or no
-if getattr(sys, 'frozen', False):
-    # Running as bundled .exe
-    dotenv_path = os.path.join(sys._MEIPASS, '.env')
-else:
-    # Running as script
-    dotenv_path = '.env'
-
-load_dotenv(dotenv_path)
-
-
+load_env()
 #Get api key from .env
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
 
