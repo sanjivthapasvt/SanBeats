@@ -24,6 +24,7 @@
         isPlaying = false
       })
     }
+    togglePlay()
   })
 
   function togglePlay() {
