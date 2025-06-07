@@ -1,12 +1,10 @@
-import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import youtube
+from routes.youtube import router
 import uvicorn
-app = FastAPI(title="SanBeats API")
 
-#Get api key from .env
-YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
+
+app = FastAPI(title="SanBeats API")
 
 #setting up middleware
 app.add_middleware(
@@ -17,6 +15,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(youtube.router, tags=["Youtube API"])
 
-uvicorn.run(app, host="127.0.0.1", port=8000)
+
+app.include_router(router, tags=["Youtube API"])
+
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="127.0.0.1", port=8000)
