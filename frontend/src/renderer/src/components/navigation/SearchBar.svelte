@@ -3,7 +3,7 @@
   import axios from 'axios'
   import { push } from 'svelte-spa-router'
   import { baseUrl, searchResults } from '../stores/Variables'
-  import logo from '../../assets/SanBeatsLogoOnly.png'
+  import logo from '../../assets/icon.png'
   // State to prevent multiple simultaneous search requests
   let clicked: boolean = false
 

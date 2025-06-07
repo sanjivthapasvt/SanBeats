@@ -12,6 +12,7 @@ async function waitForBackend(url: string, timeout = 10000): Promise<boolean> {
     try {
       const res = await fetch(url)
       if (res.ok) return true
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_) {
       // Do nothing, wait
     }
@@ -19,7 +20,6 @@ async function waitForBackend(url: string, timeout = 10000): Promise<boolean> {
   }
   return false
 }
-
 
 function startFastApiServer(): void {
   // Determine the correct binary name based on platform
@@ -30,12 +30,12 @@ function startFastApiServer(): void {
     binaryName = 'fastapi-server-mac'
   }
 
-  const serverPath = is.dev 
+  const serverPath = is.dev
     ? join(__dirname, `../../bin/${binaryName}`) // Development path
     : join(process.resourcesPath, `bin/${binaryName}`) // Production path
 
   console.log('Starting FastAPI server at:', serverPath)
-  
+
   try {
     fastApiProcess = spawn(serverPath, [], {
       stdio: ['pipe', 'pipe', 'pipe'], // Capture stdout, stderr
@@ -53,13 +53,12 @@ function startFastApiServer(): void {
     fastApiProcess.on('close', (code) => {
       console.log(`FastAPI server exited with code ${code}`)
       fastApiProcess = null
-    })
+    }) // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
     fastApiProcess.on('error', (error) => {
       console.error('Failed to start FastAPI server:', error)
       fastApiProcess = null
     })
-
   } catch (error) {
     console.error('Error spawning FastAPI server:', error)
   }
@@ -163,4 +162,3 @@ process.on('SIGTERM', () => {
   stopFastApiServer()
   app.quit()
 })
-
