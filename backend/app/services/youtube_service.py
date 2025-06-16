@@ -7,9 +7,7 @@ from fastapi import HTTPException
 from models import SearchResult, AudioInfo
 from isodate import parse_duration
 from typing import List
-from utils.env_loader import load_env
 
-load_env()
 #Get api key from .env
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
 

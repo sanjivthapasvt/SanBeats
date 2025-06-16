@@ -1,13 +1,8 @@
-from utils.env_loader import load_env
 import os
 from fastapi.security import OAuth2PasswordBearer
 import requests
 from jose import jwt
 from fastapi import APIRouter, Depends
-from datetime import datetime, timedelta, timezone
-#loading .env
-load_env()
-
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 router = APIRouter()
@@ -17,14 +12,6 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 GOOGLE_REDIRECT_URI = os.getenv("REDIRECT_URI")
-
-
-#function for creating token
-# def create_token(data: dict):
-#     to_encode = data.copy()
-#     expire = datetime.now(timezone.utc) + timedelta(days=7)
-#     to_encode.update({"exp": expire})
-#     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
 #this get method returns a url when you goto url it redirects to google login page
@@ -57,21 +44,32 @@ async def auth_google(code: str):
         "grant_type": "authorization_code",
     }
     response = requests.post(token_url, data=data)
-    access_token = response.json().get("access_token")
+    data = response.json()
+    access_token = data["access_token"]
+    access_token_expires_in = data["expires_in"]
+    refresh_token = data["refresh_token"]
+    refresh_token_expires_in = data["refresh_token_expires_in"]
     
     user_info_resp = requests.get(
         "https://www.googleapis.com/oauth2/v1/userinfo",
         headers={"Authorization": f"Bearer {access_token}"})
     user_info = user_info_resp.json()
-
-    youtube_info_resp = requests.get(
-        "https://www.googleapis.com/youtube/v3/channels?part=snippet&mine=true",
-        headers={"Authorization": f"Bearer {access_token}"})
-    youtube_data = youtube_info_resp.json()
     
+    user_data = {
+        "name": user_info["name"],
+        "email": user_info["email"],
+        "picture": user_info["picture"],
+    }
+
+    #return user info like id, name, email and also access and refresh tokens
     return {
-        "profile": user_info,
-        "youtube": youtube_data,
+        "user": user_data,
+        "token": {
+            "access_token": access_token,
+            "access_token_expires_in": access_token_expires_in,
+            "refresh_token": refresh_token,
+            "refresh_token_expires_in": refresh_token_expires_in,
+        }
     }
 
 @router.get("/token")
