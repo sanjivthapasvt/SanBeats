@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes.youtube import router
+from routes import youtube, authenticated_youtube
 import uvicorn
 from services import auth_service
 import os
@@ -30,9 +30,9 @@ app.add_middleware(
 
 
 
-app.include_router(router, tags=["Youtube API"])
+app.include_router(youtube.router, tags=["Youtube API"])
+app.include_router(authenticated_youtube.router, tags=["Logged in Youtube API"])
 app.include_router(auth_service.router, tags=["Google Login"])
-
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)

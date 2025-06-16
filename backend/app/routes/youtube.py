@@ -12,7 +12,6 @@ from services.youtube_service import(
     get_search_result,
 )
 
-
 router = APIRouter()
 
 #logger for logging errors
