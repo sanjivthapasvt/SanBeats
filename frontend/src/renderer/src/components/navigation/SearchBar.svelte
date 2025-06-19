@@ -21,7 +21,7 @@
       const response = await axios.get(`${baseUrl}/search`, {
         params: {
           q: searchQuery,
-          max_results: 25,
+          max_results: 25
         }
       })
 
@@ -38,14 +38,13 @@
       clicked = false
     }
   }
-
 </script>
 
 <!-- Main search bar container -->
 <div class="w-full bg-gray-900 text-white shadow-md px-6 py-3 flex items-center justify-between">
   <!-- Left: Logo -->
   <div class="flex items-center">
-    <button onclick="{()=>push("/")}">
+    <button onclick={() => push('/')}>
       <img src={logo} alt="logo" class="h-10 w-auto cursor-pointer" />
     </button>
   </div>
@@ -56,6 +55,9 @@
       type="search"
       placeholder="Search for music"
       bind:value={searchQuery}
+      onkeydown={(e) => {
+        if (e.key === 'Enter') searchYoutube()
+      }}
       class="flex-1 p-2 rounded-lg bg-gray-800 border border-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-red-500"
     />
     <button

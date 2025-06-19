@@ -5,9 +5,13 @@
   import { clicked, currentTrackId } from '../stores/Variables'
   import { Play, Loader2 } from '@lucide/svelte'
   import { handlePlay } from '../services/musicService'
+  import { onMount } from 'svelte'
+  onMount (()=>{
+      window.scrollTo(0, 0);
+  })
 </script>
 
-<!-- Main container with dark gradient background -->
+<!-- Main container -->
 <div class="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-indigo-950 text-white">
   <div class="px-6 py-16">
     <div class="max-w-7xl mx-auto">
@@ -25,11 +29,11 @@
           </div>
         </div>
 
-        <!-- Modern grid layout matching trending music design -->
+        <!-- grid layout-->
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           <!-- Loop through each search result -->
           {#each $searchResults as track}
-            <!-- Individual result card with modern styling -->
+            <!-- Individual result card-->
             <div
               role="button"
               tabindex="0"
@@ -37,7 +41,7 @@
               on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && handlePlay(track.id)}
               class="group bg-gray-900/40 rounded-xl cursor-pointer p-4 backdrop-blur-sm hover:bg-gray-900/60 border border-gray-700/30 transition transform hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-indigo-400"
             >
-              <!-- Thumbnail section with play overlay -->
+              <!-- Thumbnail section -->
               <div class="relative mb-4 overflow-hidden rounded-lg group">
                 <!-- Thumbnail image -->
                 <img

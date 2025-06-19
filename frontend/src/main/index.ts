@@ -1,5 +1,5 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
-import { join } from 'path'
+import path, { join } from 'path'
 import { spawn, ChildProcess } from 'child_process'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -53,7 +53,7 @@ function startFastApiServer(): void {
     fastApiProcess.on('close', (code) => {
       console.log(`FastAPI server exited with code ${code}`)
       fastApiProcess = null
-    }) // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    })
 
     fastApiProcess.on('error', (error) => {
       console.error('Failed to start FastAPI server:', error)
@@ -79,6 +79,7 @@ async function createWindow(): Promise<void> {
     width: 900,
     height: 670,
     show: false,
+    icon: path.join(__dirname, 'assets', 'icon.png'),
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {

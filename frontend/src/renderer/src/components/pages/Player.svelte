@@ -24,6 +24,7 @@
         isPlaying = false
       })
     }
+    window.scrollTo(0, 0);
     togglePlay()
   })
 
@@ -160,7 +161,7 @@
     {/if}
   </div>
 
-  <!-- Scrollable Recommendations Section - Right Side -->
+  <!--  Recommendations Section - Right Side -->
   <div class="w-[50%] ml-auto">
     <div class="p-6">
       <!-- Header -->
