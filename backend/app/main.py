@@ -27,7 +27,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
 #root path just return api name
 @app.get("/", tags=["Root"])
 async def root():
@@ -35,7 +34,7 @@ async def root():
 
 app.include_router(youtube.router,prefix="/api", tags=["Youtube API"])
 app.include_router(authenticated_youtube.router,prefix="/api", tags=["Logged in Youtube API"])
-app.include_router(auth_service.router,prefix="/api", tags=["Google Login"])
+app.include_router(auth_service.router, tags=["Google Login"])
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
