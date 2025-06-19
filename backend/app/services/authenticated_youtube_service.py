@@ -31,7 +31,7 @@ def parse_youtube_response(raw_response: dict) -> YoutubePlaylistResponse:
         raise HTTPException(status_code=500, detail=f"Parse youtube response error {str(e)}")
 
 
-def get_liked_music(access_token: str, page_token: Optional[str]= None):
+def get_liked_music(access_token: str, page_token: Optional[str]= None) -> YoutubePlaylistResponse:
 #for response from youtube
     try:
         url = "https://www.googleapis.com/youtube/v3/videos"
@@ -66,3 +66,23 @@ def get_liked_music(access_token: str, page_token: Optional[str]= None):
     except Exception as e:
         logger.error(f"liked music error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Liked music error {str(e)}")
+
+def get_user_playlist(access_token: str, page_token: Optional[str] = None) -> YoutubePlaylistResponse:
+    try:
+        url = "https://www.googleapis.com/youtube/v3/playlists"
+        params = {
+            "part": "snippet,contentDetails",
+            "mine": True,
+            "maxResults": 10,
+        }
+        headers = {"Authorization": f"Bearer {access_token}"}
+        
+        response = requests.get(url, params=params, headers=headers)
+        response.raise_for_status()
+        data = response.json()
+
+        return parse_youtube_response(data)
+    
+    except Exception as e:
+        logger.error(f"Get playlist error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Get playlist error {str(e)}")

@@ -3,6 +3,9 @@ from fastapi.security import OAuth2PasswordBearer
 import requests
 from jose import jwt
 from fastapi import APIRouter, Depends
+from urllib.parse import urlencode
+
+
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 router = APIRouter()
@@ -17,15 +20,24 @@ GOOGLE_REDIRECT_URI = os.getenv("REDIRECT_URI")
 #this get method returns a url when you goto url it redirects to google login page
 @router.get("/login/google")
 async def login_google():
-    url = (
-    f"https://accounts.google.com/o/oauth2/auth?"
-    f"response_type=code&"
-    f"client_id={GOOGLE_CLIENT_ID}&"
-    f"redirect_uri={GOOGLE_REDIRECT_URI}&"
-    f"scope=openid%20email%20profile%20https://www.googleapis.com/auth/youtube.readonly&"
-    f"access_type=offline&"
-    f"prompt=consent"
-)
+    scopes = [
+        "openid",
+        "email",
+        "profile",
+        "https://www.googleapis.com/auth/youtube.readonly",
+        "https://www.googleapis.com/auth/youtube.force-ssl"
+    ]
+
+    params = {
+        "response_type": "code",
+        "client_id": GOOGLE_CLIENT_ID,
+        "redirect_uri": GOOGLE_REDIRECT_URI,
+        "scope": " ".join(scopes),
+        "access_type": "offline",
+        "prompt": "consent"
+    }
+    
+    url = "https://accounts.google.com/o/oauth2/auth?" + urlencode(params)
     return{
         "url": url
     }

@@ -20,14 +20,10 @@ logger = logging.getLogger(__name__)
 
 #threads to execute functions asynchronously
 executor = ThreadPoolExecutor(max_workers=4)
-#root path just return api name
-@router.get("/")
-async def root():
-    return {"message": "SanBeats API"}
 
 #Get method on /search with required query parameter and optional max results 
 #for sending search videos to youtube API
-@router.get('/api/search', response_model=List[SearchResult])
+@router.get('/search', response_model=List[SearchResult])
 async def search_youtube(
     q: str = Query(..., description="Youtube search query")):
     try:
@@ -42,7 +38,7 @@ async def search_youtube(
 
 
 #GET METHOD FOR GETTING YOUTUBE AUDIO URL
-@router.get("/api/info/{video_id}", response_model=AudioInfo)
+@router.get("/info/{video_id}", response_model=AudioInfo)
 async def get_audio_info(video_id: str):
     try:
         info = await asyncio.get_event_loop().run_in_executor(
@@ -55,7 +51,7 @@ async def get_audio_info(video_id: str):
         raise HTTPException(status_code=404, detail="Video not found")
     
 #GET METHOD FOR GETTING REALTED VIEDO TO THE MUSIC BEING PLAYED
-@router.get("/api/recommendation/{video_id}", response_model=List[SearchResult])
+@router.get("/recommendation/{video_id}", response_model=List[SearchResult])
 async def music_recommendation(video_id: str):
     try:
         recommendation = await asyncio.get_event_loop().run_in_executor(
@@ -66,7 +62,7 @@ async def music_recommendation(video_id: str):
         logger.error(f"Recommendation error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error while recommending: {str(e)}")
 
-@router.get("/api/trending", response_model=List[SearchResult])
+@router.get("/trending", response_model=List[SearchResult])
 async def trending_music():
     try:
         trending = await asyncio.get_event_loop().run_in_executor(
@@ -78,7 +74,7 @@ async def trending_music():
         raise HTTPException(status_code=500, detail=f"Error getting trending: {str(e)}")
     
 
-@router.get("/api/most_viewed_music", response_model=List[SearchResult])
+@router.get("/most_viewed_music", response_model=List[SearchResult])
 async def most_viewed_music():
     try:
         popular_music = await asyncio.get_event_loop().run_in_executor(
