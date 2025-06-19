@@ -1,15 +1,11 @@
 import os
-from fastapi.security import OAuth2PasswordBearer
 import requests
-from jose import jwt
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 from urllib.parse import urlencode
 
 
 SECRET_KEY = os.getenv("SECRET_KEY")
-ALGORITHM = os.getenv("ALGORITHM")
 router = APIRouter()
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 #google api client id and secret from .env
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
@@ -83,7 +79,3 @@ async def auth_google(code: str):
             "refresh_token_expires_in": refresh_token_expires_in,
         }
     }
-
-@router.get("/token")
-async def get_token(token: str = Depends(oauth2_scheme)):
-    return jwt.decode(token, GOOGLE_CLIENT_SECRET, algorithms=ALGORITHM)

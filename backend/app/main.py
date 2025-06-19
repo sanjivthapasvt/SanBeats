@@ -29,7 +29,7 @@ app.add_middleware(
 )
 
 #root path just return api name
-@app.get("/")
+@app.get("/", tags=["Root"])
 async def root():
     return {"message": "SanBeats API"}
 
