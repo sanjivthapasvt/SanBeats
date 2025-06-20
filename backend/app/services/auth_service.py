@@ -15,7 +15,7 @@ GOOGLE_REDIRECT_URI = os.getenv("REDIRECT_URI")
 
 #this get method returns a url when you goto url it redirects to google login page
 @router.get("/api/login/google")
-async def login_google():
+async def google_login():
     scopes = [
         "openid",
         "email",

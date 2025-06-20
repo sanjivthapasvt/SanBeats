@@ -83,36 +83,27 @@ def list_videos(data: dict) -> List[SearchResult]:
 def get_video_info(video_id: str) -> AudioInfo:
     ydl_opts = {
         'quiet': True,
-        'no_warnings': True,
-        'skip_download': True,
-        'format': 'bestaudio',
-        'extract_flat': False,
-        'force_generic_extractor': False,
+        'format': '140',
         'noplaylist': True,
-        'cachedir': False,
+        'socket_timeout': 5,
+        'retries': 0,
     }
     
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(f"https://youtube.com/watch?v={video_id}", download=False, process=True)
-        formats = info.get('formats',[])
-        audio_formats = [f for f in formats if f.get('vcodec') == 'none' and f.get('acodec') != 'none']
-        if not audio_formats:
-            raise ValueError("No audio formats found")
-        best_audio = max(audio_formats, key=lambda x: x.get('abr') or 0)
+        info = ydl.extract_info(f"https://youtu.be/{video_id}", download=False)
+        
         duration_seconds = info.get('duration', 0)
         formatted_duration = format_duration(datetime.timedelta(seconds=duration_seconds))
-
+        
         return AudioInfo(
-            url=best_audio['url'],
-            title = info.get('title', ''),
-            duration = formatted_duration,
-            format=best_audio.get('acodec', 'unknown'),
-            quality=f"{best_audio.get('abr', 0)}kbps",
-            thumbnail = info.get('thumbnail', ''),
+            url=info['url'],
+            title=info.get('title', ''),
+            duration=formatted_duration,
+            format='m4a',
+            quality='128kbps',
+            thumbnail=info.get('thumbnail', ''),
         )
-
-
-
+        
 #function forsearchiing in youtube
 def get_search_result(q: str) -> List[SearchResult]:
     try:
