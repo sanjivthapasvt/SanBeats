@@ -83,8 +83,7 @@ def list_videos(data: dict) -> List[SearchResult]:
 
 #funciton for getting audio url
 def get_audio_info(video_id: str) -> AudioUrlAndInfo:
-    cached = get_cached_audio_info(video_id)
-    if cached:
+    if cached := get_cached_audio_info(video_id):
         return cached
     try:
         return extract_audio_url_and_info(video_id)

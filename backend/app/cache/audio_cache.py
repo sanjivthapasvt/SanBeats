@@ -16,9 +16,7 @@ def is_valid(entry: AudioInfo) -> bool:
 
 def get_cached_audio_info(video_id: str) -> AudioUrlAndInfo | None:
     entry = cached_info.get(video_id)
-    if entry and is_valid(entry):
-        return AudioUrlAndInfo(video_id=entry)
-    return None
+    return AudioUrlAndInfo(video_id=entry) if entry and is_valid(entry) else None
 
 def extract_audio_url_and_info(video_id):
     ydl_opts = {
