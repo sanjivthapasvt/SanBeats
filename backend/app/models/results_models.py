@@ -7,7 +7,7 @@ class SearchResult(BaseModel):
     duration: str
     thumbnail: str
     channel: str
-
+    
 class AudioInfo(BaseModel):
     url: str
     title: str
@@ -15,6 +15,8 @@ class AudioInfo(BaseModel):
     format: str
     quality: str
     thumbnail: str
+    channel: str
+    expires_at: float
     
-class AudioUrl(BaseModel):
-    url: str
+class AudioUrlAndInfo(BaseModel):
+    video_id: AudioInfo

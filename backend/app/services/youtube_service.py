@@ -1,12 +1,14 @@
-import datetime
 import requests
 import os
 import logging
-import yt_dlp
+
 from fastapi import HTTPException
-from models import SearchResult, AudioInfo, AudioUrl
 from isodate import parse_duration
 from typing import List
+
+from services.format_service import format_duration
+from cache.audio_cache import get_cached_audio_info, extract_audio_url_and_info
+from models import SearchResult, AudioInfo, AudioUrlAndInfo
 
 #Get api key from .env
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
@@ -79,42 +81,18 @@ def list_videos(data: dict) -> List[SearchResult]:
         
     return results
 
-from cache.audio_cache import get_cached_audio_url, extract_audio_url
 #funciton for getting audio url
-def get_audio(video_id: str) -> AudioUrl:
-    cached = get_cached_audio_url(video_id)
+def get_audio_info(video_id: str) -> AudioUrlAndInfo:
+    cached = get_cached_audio_info(video_id)
     if cached:
-        return {"url": cached}
+        return cached
     try:
-        audio_url = extract_audio_url(video_id)
-        return {"url": audio_url}
-    except Exception as e:
-        logger.error(f"Error while gettting audio url {str(e)}")
+        return extract_audio_url_and_info(video_id)
 
-#funciton for getting video info from youtube and using yt-dlp to return audio only url 
-def get_video_info(video_id: str) -> AudioInfo:
-    ydl_opts = {
-        'quiet': True,
-        'format': '140',
-        'noplaylist': True,
-        'socket_timeout': 5,
-        'retries': 0,
-    }
-    
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(f"https://youtu.be/{video_id}", download=False)
-        
-        duration_seconds = info.get('duration', 0)
-        formatted_duration = format_duration(datetime.timedelta(seconds=duration_seconds))
-        
-        return AudioInfo(
-            url=info['url'],
-            title=info.get('title', ''),
-            duration=formatted_duration,
-            format='m4a',
-            quality='128kbps',
-            thumbnail=info.get('thumbnail', ''),
-        )
+    except Exception as e:
+        logger.error(f"Error while gettting audio info {str(e)}")
+        raise
+
         
 #function forsearchiing in youtube
 def get_search_result(q: str) -> List[SearchResult]:
@@ -261,13 +239,3 @@ def get_most_viewed_music() -> List[SearchResult]:
     
     except Exception as e:
         logger.error(f"Most Viewed music error {str(e)}")
-
-#function for parsing time
-def format_duration(td: datetime.timedelta) -> str:
-    total_seconds = int(td.total_seconds())
-    minutes, seconds = divmod(total_seconds, 60)
-    hours, minutes = divmod(minutes, 60)
-    if hours:
-        return f"{hours}:{minutes:02}:{seconds:02}"
-    else:
-        return f"{minutes}:{seconds:02}"
