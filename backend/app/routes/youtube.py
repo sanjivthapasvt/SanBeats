@@ -1,7 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 import logging
 from fastapi import APIRouter, HTTPException, Query, logger
-from models import SearchResult, AudioInfo
+from models import SearchResult, AudioInfo, AudioUrl
 from typing import List
 import asyncio
 from services.youtube_service import(
@@ -10,6 +10,7 @@ from services.youtube_service import(
     get_trending_music,
     get_video_info,
     get_search_result,
+    get_audio
 )
 
 router = APIRouter()
@@ -45,6 +46,18 @@ async def get_audio_url_and_info(video_id: str):
             executor, get_video_info, video_id
         )
         return info
+    
+    except Exception as e:
+        logger.error(f"Stream Info error {str(e)}")
+        
+#GET METHOD FOR GETTING YOUTUBE AUDIO URL
+@router.get("/audio/{video_id}", response_model=AudioUrl)
+async def get_audio_url_and_info(video_id: str):
+    try:
+        audio_url = await asyncio.get_event_loop().run_in_executor(
+            executor, get_audio, video_id
+        )
+        return audio_url
     
     except Exception as e:
         logger.error(f"Stream Info error {str(e)}")

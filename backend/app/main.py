@@ -32,6 +32,7 @@ app.add_middleware(
 async def root():
     return {"message": "SanBeats API"}
 
+
 app.include_router(youtube.router,prefix="/api", tags=["Youtube API"])
 app.include_router(authenticated_youtube.router,prefix="/api", tags=["Logged in Youtube API"])
 app.include_router(auth_service.router, tags=["Google Login"])

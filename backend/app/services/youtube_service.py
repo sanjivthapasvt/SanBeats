@@ -4,7 +4,7 @@ import os
 import logging
 import yt_dlp
 from fastapi import HTTPException
-from models import SearchResult, AudioInfo
+from models import SearchResult, AudioInfo, AudioUrl
 from isodate import parse_duration
 from typing import List
 
@@ -78,6 +78,18 @@ def list_videos(data: dict) -> List[SearchResult]:
         ))     
         
     return results
+
+from cache.audio_cache import get_cached_audio_url, extract_audio_url
+#funciton for getting audio url
+def get_audio(video_id: str) -> AudioUrl:
+    cached = get_cached_audio_url(video_id)
+    if cached:
+        return {"url": cached}
+    try:
+        audio_url = extract_audio_url(video_id)
+        return {"url": audio_url}
+    except Exception as e:
+        logger.error(f"Error while gettting audio url {str(e)}")
 
 #funciton for getting video info from youtube and using yt-dlp to return audio only url 
 def get_video_info(video_id: str) -> AudioInfo:

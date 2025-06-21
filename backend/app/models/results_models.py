@@ -15,3 +15,6 @@ class AudioInfo(BaseModel):
     format: str
     quality: str
     thumbnail: str
+    
+class AudioUrl(BaseModel):
+    url: str
