@@ -10,7 +10,7 @@
     currentTrackId,
     popularMusic
   } from '../stores/Variables'
-  import { Play, Loader2, RefreshCw, CircleArrowRight, CircleArrowLeft } from '@lucide/svelte'
+  import { Play, Loader2, CircleArrowRight, CircleArrowLeft } from '@lucide/svelte'
 
   // Fetch trending music from API
   const fetchTrending = async () => {
@@ -75,13 +75,6 @@
         >
           🔥 Trending Now
         </h2>
-        <button
-          on:click={fetchTrending && fetchPopular}
-          class="flex items-center gap-2 text-indigo-400 hover:text-indigo-300 transition"
-        >
-          <RefreshCw size={22} />
-          <span class="font-medium">Refresh</span>
-        </button>
       </div>
 
       {#if isLoading}

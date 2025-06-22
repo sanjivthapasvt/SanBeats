@@ -38,7 +38,7 @@ async def search_youtube(
 
         
 #GET METHOD FOR GETTING YOUTUBE AUDIO URL
-@router.get("/info/{video_id}", response_model=AudioUrlAndInfo)
+@router.get("/info/{video_id}", response_model=AudioInfo)
 async def get_audio_url_and_info(video_id: str):
     try:
         audio_info = await asyncio.get_event_loop().run_in_executor(
