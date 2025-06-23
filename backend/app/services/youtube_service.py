@@ -8,7 +8,7 @@ from typing import List
 
 from services.format_service import format_duration
 from cache.audio_cache import get_cached_audio_info, extract_audio_url_and_info
-from models import SearchResult, AudioInfo, AudioUrlAndInfo
+from models import SearchResult, AudioInfo
 
 #Get api key from .env
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")

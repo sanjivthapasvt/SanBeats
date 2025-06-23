@@ -2,7 +2,7 @@ import datetime
 import time
 import yt_dlp
 
-from models.results_models import AudioUrlAndInfo, AudioInfo
+from models.results_models import AudioInfo
 from services.format_service import format_duration
 
 #variable for in-memory cache

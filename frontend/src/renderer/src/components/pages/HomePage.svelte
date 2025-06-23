@@ -8,24 +8,56 @@
     trendingMusic,
     clicked,
     currentTrackId,
-    popularMusic
+    popularMusic,
+    hasFetchedPopular,
+    hasFetchedTrending
   } from '../stores/Variables'
   import { Play, Loader2, CircleArrowRight, CircleArrowLeft } from '@lucide/svelte'
+  import type { searchResultInterface } from '../interface/Interface'
+  import { get } from 'svelte/store'
+
+  const cachedIds = new Set()
+  let isLoadingTrending = false
+  let isLoadingPopular = false
 
   // Fetch trending music from API
   const fetchTrending = async () => {
     try {
-      isLoading = true
+      isLoadingTrending = true
       const response = await axios.get(`${baseUrl}/trending`)
-      trendingMusic.set(response?.data)
+      const musicList = response?.data || []
+      trendingMusic.set(musicList)
+      musicList.forEach((track) => cacheUrl(track.id))
     } catch (error) {
       console.error('Error fetching trending music:', error)
     } finally {
-      isLoading = false
+      isLoadingTrending = false
     }
   }
 
-  let isLoading = true
+  const fetchPopular = async () => {
+    try {
+      isLoadingPopular = true
+      const response = await axios.get(`${baseUrl}/most_viewed_music`)
+      const musicList = response?.data || []
+      popularMusic.set(musicList)
+      musicList.forEach((track: searchResultInterface) => cacheUrl(track.id))
+    } catch (error) {
+      console.error(error)
+    }finally{
+      isLoadingPopular = false
+    }
+  }
+
+  const cacheUrl = async (videoId: string) => {
+    try {
+      if (cachedIds.has(videoId)) return
+      cachedIds.add(videoId)
+      fetch(`${baseUrl}/info/${videoId}`)
+    } catch (error) {
+      console.error(`Something went wrong while caching ${error}`)
+    }
+  }
 
   let trendingPage = 0
   let popularPage = 0
@@ -48,20 +80,19 @@
     if (popularPage > 0) popularPage--
   }
 
-  const fetchPopular = async () => {
-    try {
-      const response = await axios.get(`${baseUrl}/most_viewed_music`)
-      popularMusic.set(response?.data)
-    } catch (error) {
-      console.error(error)
-    }
-  }
-
   // Load trending music and popular on component mount
   onMount(() => {
-    fetchTrending()
-    fetchPopular()
-    window.scrollTo(0, 0);
+    if (!get(hasFetchedTrending)) {
+      fetchTrending()
+      hasFetchedTrending.set(true)
+    }
+
+    if (!get(hasFetchedPopular)) {
+      fetchPopular()
+      hasFetchedPopular.set(true)
+    }
+
+    window.scrollTo(0, 0)
   })
 </script>
 
@@ -77,7 +108,7 @@
         </h2>
       </div>
 
-      {#if isLoading}
+      {#if isLoadingTrending}
         <div class="relative">
           <button
             on:click={prevTrending}
@@ -190,7 +221,7 @@
         </h2>
       </div>
 
-      {#if isLoading}
+      {#if isLoadingPopular}
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
           {#each Array(5) as _}
             <div class="bg-gray-800/40 rounded-xl p-6 animate-pulse space-y-4 shadow-md">

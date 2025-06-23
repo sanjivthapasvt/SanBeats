@@ -17,6 +17,3 @@ class AudioInfo(BaseModel):
     thumbnail: str
     channel: str
     expires_at: float
-    
-class AudioUrlAndInfo(BaseModel):
-    video_id: AudioInfo

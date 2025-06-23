@@ -1,7 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 import logging
 from fastapi import APIRouter, HTTPException, Query, logger
-from models import SearchResult, AudioInfo, AudioUrlAndInfo
+from models import SearchResult, AudioInfo
 from typing import List
 import asyncio
 from services.youtube_service import(
