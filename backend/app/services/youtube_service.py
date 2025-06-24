@@ -204,7 +204,7 @@ def get_trending_music() -> List[SearchResult]:
             "regionCode": "US",
             "videoCategoryId": "10",
             "q": "music",
-            "maxResults": "25",
+            "maxResults": "10",
             "key": YOUTUBE_API_KEY
         }
         response = requests.get(url, params, timeout=30)
@@ -227,7 +227,7 @@ def get_most_viewed_music() -> List[SearchResult]:
             # "publishedAfter": "2024-06-01T00:00:00Z", #within last year
             "order": "viewCount",
             "videoCategoryId": "10",
-            "maxResults": "25",
+            "maxResults": "10",
             "regionCode": "US",
             "key": YOUTUBE_API_KEY
         }
