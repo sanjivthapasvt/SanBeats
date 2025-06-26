@@ -4,11 +4,12 @@
   import SearchBar from './components/navigation/SearchBar.svelte'
   import SearchResults from './components/pages/SearchResults.svelte'
   import Playing from './components/pages/Player.svelte'
-
+  import DownloadPage from './components/pages/DownloadPage.svelte'
   const routes = {
     '/': HomePage,
     '/search': SearchResults,
-    '/play': Playing
+    '/play': Playing,
+    '/download': DownloadPage
   }
 </script>
 

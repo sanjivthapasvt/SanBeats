@@ -10,6 +10,7 @@ def download_youtube_video(path: str, video_url: str, video: bool = True, qualit
         'outtmpl': os.path.join(path, '%(title)s.%(ext)s'),
         'noplaylist': True,
         'quiet': False,
+        'keep_video': True
     }
 
     if video:

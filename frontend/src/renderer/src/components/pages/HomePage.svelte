@@ -44,7 +44,7 @@
       musicList.forEach((track: searchResultInterface) => cacheUrl(track.id))
     } catch (error) {
       console.error(error)
-    }finally{
+    } finally {
       isLoadingPopular = false
     }
   }
@@ -111,14 +111,14 @@
       {#if isLoadingTrending}
         <div class="relative">
           <button
-            on:click={prevTrending}
+            onclick={prevTrending}
             class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-12 h-12 bg-gray-700 hover:bg-gray-600 rounded-full disabled:opacity-30 flex items-center justify-center"
             disabled={trendingPage === 0}
           >
             <CircleArrowLeft size={20} />
           </button>
           <button
-            on:click={nextTrending}
+            onclick={nextTrending}
             class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-12 h-12 bg-indigo-600 hover:bg-indigo-700 rounded-full disabled:opacity-30 flex items-center justify-center"
             disabled={trendingPage >= trendingPages - 1}
           >
@@ -137,14 +137,14 @@
       {:else if $trendingMusic.length > 0}
         <div class="relative">
           <button
-            on:click={prevTrending}
+            onclick={prevTrending}
             class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-12 h-12 bg-gray-700 hover:bg-gray-600 rounded-full disabled:opacity-30 flex items-center justify-center"
             disabled={trendingPage === 0}
           >
             <CircleArrowLeft size={20} />
           </button>
           <button
-            on:click={nextTrending}
+            onclick={nextTrending}
             class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-12 h-12 bg-indigo-600 hover:bg-indigo-700 rounded-full disabled:opacity-30 flex items-center justify-center"
             disabled={trendingPage >= trendingPages - 1}
           >
@@ -155,8 +155,8 @@
               <div
                 role="button"
                 tabindex="0"
-                on:click={() => handlePlay(track.id)}
-                on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && handlePlay(track.id)}
+                onclick={() => handlePlay(track.id)}
+                onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && handlePlay(track.id)}
                 class="group bg-gray-900/40 rounded-xl cursor-pointer p-4 backdrop-blur-sm hover:bg-gray-900/60 border border-gray-700/30 transition transform hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-indigo-400"
               >
                 <div class="relative mb-4 overflow-hidden rounded-lg group">
@@ -201,7 +201,7 @@
           <h3 class="text-2xl font-bold mb-2">No trending music found</h3>
           <p class="text-gray-400 mb-6">Try refreshing or come back later.</p>
           <button
-            on:click={fetchTrending}
+            onclick={fetchTrending}
             class="bg-indigo-500 hover:bg-indigo-600 px-6 py-2 text-sm font-semibold rounded-full transition duration-300"
             >Retry</button
           >
@@ -235,7 +235,7 @@
         <div class="relative">
           <!-- Prev Button -->
           <button
-            on:click={prevPopular}
+            onclick={prevPopular}
             class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 z-10 w-12 h-12 bg-gray-700 hover:bg-gray-600 rounded-full disabled:opacity-30 flex items-center justify-center"
             disabled={popularPage === 0}
           >
@@ -244,7 +244,7 @@
 
           <!-- Next Button -->
           <button
-            on:click={nextPopular}
+            onclick={nextPopular}
             class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 z-10 w-12 h-12 bg-indigo-600 hover:bg-indigo-700 rounded-full disabled:opacity-30 flex items-center justify-center"
             disabled={popularPage >= popularPages - 1}
           >
@@ -257,8 +257,8 @@
               <div
                 role="button"
                 tabindex="0"
-                on:click={() => handlePlay(track.id)}
-                on:keydown={(e) => (e.key === 'Enter' || e.key === ' ') && handlePlay(track.id)}
+                onclick={() => handlePlay(track.id)}
+                onkeydown={(e) => (e.key === 'Enter' || e.key === ' ') && handlePlay(track.id)}
                 class="group bg-gray-900/40 rounded-xl cursor-pointer p-4 backdrop-blur-sm hover:bg-gray-900/60 border border-gray-700/30 transition transform hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-indigo-400"
               >
                 <div class="relative mb-4 overflow-hidden rounded-lg group">
@@ -303,7 +303,7 @@
           <h3 class="text-2xl font-bold mb-2">No popular music found</h3>
           <p class="text-gray-400 mb-6">Try refreshing or come back later.</p>
           <button
-            on:click={fetchTrending}
+            onclick={fetchTrending}
             class="bg-indigo-500 hover:bg-indigo-600 px-6 py-2 text-sm font-semibold rounded-full transition duration-300"
             >Retry</button
           >

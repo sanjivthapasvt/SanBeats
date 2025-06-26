@@ -1,12 +1,13 @@
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-from fastapi import APIRouter, HTTPException, Response
+from typing import Optional
+from fastapi import APIRouter, HTTPException
 from services.download_service import download_youtube_video
 router = APIRouter()
 executor = ThreadPoolExecutor(max_workers=4)
 
 @router.post("/download")
-async def download_video(video_url: str, path:str, video:bool, quality:int = None):
+async def download_video(video_url: str, path:str, video:bool, quality:Optional[int]= None):
     try:
         download = await asyncio.get_event_loop().run_in_executor(
             executor, download_youtube_video, path, video_url, video, quality
