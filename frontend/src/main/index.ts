@@ -23,7 +23,7 @@ async function waitForBackend(url: string, timeout = 10000): Promise<boolean> {
 
 function startFastApiServer(): void {
   // Determine the correct binary name based on platform
-  let binaryName = 'fastapi-server'
+  let binaryName = 'fastapi-server.AppImage'
   if (process.platform === 'win32') {
     binaryName = 'fastapi-server.exe'
   } else if (process.platform === 'darwin') {
