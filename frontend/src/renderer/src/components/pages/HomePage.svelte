@@ -13,10 +13,9 @@
     hasFetchedTrending
   } from '../stores/Variables'
   import { Play, Loader2, CircleArrowRight, CircleArrowLeft } from '@lucide/svelte'
-  import type { searchResultInterface } from '../interface/Interface'
   import { get } from 'svelte/store'
 
-  const cachedIds = new Set()
+  // const cachedIds = new Set()
   let isLoadingTrending = false
   let isLoadingPopular = false
 
@@ -27,7 +26,7 @@
       const response = await axios.get(`${baseUrl}/trending`)
       const musicList = response?.data || []
       trendingMusic.set(musicList)
-      musicList.forEach((track) => cacheUrl(track.id))
+      // musicList.forEach((track) => cacheUrl(track.id))
     } catch (error) {
       console.error('Error fetching trending music:', error)
     } finally {
@@ -41,7 +40,7 @@
       const response = await axios.get(`${baseUrl}/most_viewed_music`)
       const musicList = response?.data || []
       popularMusic.set(musicList)
-      musicList.forEach((track: searchResultInterface) => cacheUrl(track.id))
+      // musicList.forEach((track: searchResultInterface) => cacheUrl(track.id))
     } catch (error) {
       console.error(error)
     } finally {
@@ -49,15 +48,15 @@
     }
   }
 
-  const cacheUrl = async (videoId: string) => {
-    try {
-      if (cachedIds.has(videoId)) return
-      cachedIds.add(videoId)
-      fetch(`${baseUrl}/info/${videoId}`)
-    } catch (error) {
-      console.error(`Something went wrong while caching ${error}`)
-    }
-  }
+  // const cacheUrl = async (videoId: string) => {
+  //   try {
+  //     if (cachedIds.has(videoId)) return
+  //     cachedIds.add(videoId)
+  //     fetch(`${baseUrl}/info/${videoId}`)
+  //   } catch (error) {
+  //     console.error(`Something went wrong while caching ${error}`)
+  //   }
+  // }
 
   let trendingPage = 0
   let popularPage = 0
